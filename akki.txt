@@ -1,0 +1,402 @@
+Skip to content
+ 
+ 
+Search…
+All gists
+GitHub
+New gist @toothless-k
+ Edit
+  Delete
+  Star 0
+  @toothless-ktoothless-k/additiontocart.jsp
+Last active 4 hours ago
+Embed  
+<script src="https://gist.github.com/toothless-k/873f1294c49b5e4fa80508f2eaef7361.js"></script>
+  Download ZIP
+ Code  Revisions 2
+Raw  additiontocart.jsp
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+</head>
+<body>
+<h5>Item added Succesfully!!</h5>
+<form action="index.jsp" >
+
+Want to add more?<button type="submit" value="submit">ADD!!</button>
+
+</form>
+<form action="purchase" method=GET>
+Want to purchase?<button type="submit" value="submit">Purchase!</button>
+
+</form>
+
+
+</body>
+</html>
+Raw  cartadd.java
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+public class cartadd extends HttpServlet{
+	
+	
+	public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
+	
+	{
+		try{
+			RequestDispatcher rd=null;
+			int i=1;
+			int id=Integer.parseInt(req.getParameter("item"));
+			String name=null, cost=null, category=null, brand=null;
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","aaku98845");
+			Statement st=con.createStatement();
+			ResultSet rs=st.executeQuery("select * from item where id="+id);
+			while(rs.next())
+			{
+				name=rs.getString(2);
+				brand=rs.getString(3);
+				category=rs.getString(4);
+				cost=rs.getString(5);
+			}
+			rs.close();
+			i=st.executeUpdate("Insert into cart values ("+id+",'"+name+"','"+brand+"','"+category+"','"+cost+"')");
+			rd=req.getRequestDispatcher("/additiontocart.jsp");
+			rd.forward(req, res);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+
+}
+Raw  cartvalue.jsp
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+
+</head>
+<body>
+cart items:${requestScope["user"]}
+
+<br>
+cost:${requestScope["co"]}
+<form action="pay" method=GET>
+
+Username:<input type="text" value="uname">
+Password:<input type="text" value="pass">
+<button type="submit" value="submit">login</button>
+</form>
+
+
+</body>
+</html>
+Raw  display.java
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.*;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+
+public class display extends HttpServlet{
+
+
+	private static final long serialVersionUID = 1L;
+
+	public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
+	{
+		
+		String cate=null, bran=null, name=null,cost=null;
+		int id=1;
+		String result=" ";
+		try
+		{
+			
+			PrintWriter out=res.getWriter();
+			cate=req.getParameter("cat");
+			bran=req.getParameter("bra");
+			name=req.getParameter("nam");
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","aaku98845");
+			Statement st=con.createStatement();
+			ResultSet rs=st.executeQuery("select * from item where name='"+name+"' and brand='"+bran+"'and category='"+cate+"'");
+			while(rs.next())
+			{
+				id=rs.getInt(1);
+				name=rs.getString(2);
+				bran=rs.getString(3);
+				cate=rs.getString(4);
+				cost=rs.getString(5);
+				result=result+" "+id+" "+name+" "+bran+" "+cate+" "+cost+" ";
+			}
+			
+			RequestDispatcher rd=req.getRequestDispatcher("/success.jsp");
+			req.setAttribute("auto",result);
+			rd.forward(req,res);
+			st.close();
+			rs.close();
+			con.close();
+			
+			
+		}catch(Exception e){e.printStackTrace();}
+	}
+	
+}
+Raw  done.jsp
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+</head>
+<body>
+PAYMENT MADE!!! and your items have been purchased by you!
+</body>
+</html>
+Raw  error.jsp
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+</head>
+<body>
+Login error!! Cannot make any purchase !
+</body>
+</html>
+Raw  gistfile1.txt
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1">
+  <display-name>InventoryAndStatistics</display-name>
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>default.html</welcome-file>
+    <welcome-file>default.htm</welcome-file>
+    <welcome-file>menu.jsp</welcome-file>
+  </welcome-file-list>
+  <servlet>
+   
+    <servlet-name>display</servlet-name>
+    <servlet-class>display</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>display</servlet-name>
+    <url-pattern>/display</url-pattern>
+  </servlet-mapping>
+  <servlet>
+  <servlet-name>cartadd</servlet-name>
+  <servlet-class>cartadd</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>cartadd</servlet-name>
+    <url-pattern>/cartadd</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>purchase</servlet-name>
+    <servlet-class>purchase</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>purchase</servlet-name>
+    <url-pattern>/purchase</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>pay</servlet-name>
+    <servlet-class>pay</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>pay</servlet-name>
+    <url-pattern>/pay</url-pattern>
+  </servlet-mapping>
+</web-app>
+Raw  index.jsp
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<h1>Online shopping system</h1>
+</head>
+<body>
+<form action="display" method=GET>
+name:<input type="text" name="nam"></br>
+Category:<input type="text" name="cat"></br>
+Brand:<input type="text" name="bra"></br>
+
+<button type="submit" value="submit">submit</button>
+</form>
+</body>
+</html>
+Raw  pay.java
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class pay extends HttpServlet{
+	
+	public void doGet(HttpServletRequest req, HttpServletResponse res)throws IOException, ServletException
+	{
+		
+		
+		try{
+			
+			RequestDispatcher rd=null;
+			int flag=0;
+			String name=null, passw=null;
+			name=req.getParameter("uname");
+			passw=req.getParameter("pass");
+			String p=null;
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","aaku98845");
+			Statement st=con.createStatement();
+			ResultSet rs=st.executeQuery("Select * from user where uname='"+name+"'");
+			while(rs.next())
+			{
+				p=rs.getString("pass");
+			}
+			if(passw==p)
+			{
+				flag=1;
+			}
+			if(flag==1)
+			{
+		rd=req.getRequestDispatcher("/done.jsp");
+			}
+			else
+				rd=req.getRequestDispatcher("/error.jsp");
+			
+			
+			
+			rd.forward(req, res);
+			
+			
+		}catch(Exception e){e.printStackTrace();}
+		
+		
+		
+	}
+	
+	
+
+}
+Raw  purchase.java
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+public class purchase extends HttpServlet{
+	
+	public void doGet(HttpServletRequest req, HttpServletResponse res)throws IOException, ServletException
+	{
+		
+		
+		try{
+			
+			
+			String buffer=" ", name=null, category=null, brand=null;
+			int id=1, cost=1, total=0;
+			Class.forName("com.mysql.jdbc.Driver");
+			Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/shopping","root","aaku98845");
+			Statement st=con.createStatement();
+			ResultSet rs=st.executeQuery("Select * from cart");
+			while(rs.next())
+			{
+				id=rs.getInt(1);
+				name=rs.getString(2);
+				brand=rs.getString(3);
+				category=rs.getString(4);
+				cost=Integer.parseInt(rs.getString(5));
+				total=total+cost;
+				buffer=buffer+" "+id+" "+name+" "+brand+" "+category+" "+cost+" ";
+			}
+			
+			RequestDispatcher rd=req.getRequestDispatcher("/cartvalue.jsp");
+			req.setAttribute("user",buffer);
+			req.setAttribute("co",total);
+			rd.forward(req, res);
+			
+			
+		}catch(Exception e){e.printStackTrace();}
+		
+		
+		
+	}
+	
+	
+
+}
+Raw  success.jsp
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+item chosen:${requestScope["auto"]}
+
+
+<form action="cartadd" mehod=GET>
+
+<h4>items to add to cart</h4>
+id:<input type="text" name="item">
+<button type="submit" value="submit">submit</button>
+</form>
+</body>
+</html>
+ @toothless-k
+  
+         
+Write  Preview
+
+Leave a comment
+Attach files by dragging & dropping,  Choose Files selecting them, or pasting from the clipboard.
+ Styling with Markdown is supported
+Comment
+Contact GitHub API Training Shop Blog About
+© 2016 GitHub, Inc. Terms Privacy Security Status Help
